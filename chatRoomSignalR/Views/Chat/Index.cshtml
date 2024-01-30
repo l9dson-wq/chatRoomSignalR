@@ -1,0 +1,11 @@
+﻿<div class="row">
+  <div class="col-md-8 offset-2">
+    <h2>Chat's rooms</h2>
+    <ul class="list-group">
+      @foreach (var e in chatRoomSignalR.Controllers.ChatController.Rooms)
+      {
+        <li class="list-group-item"><a href="~/chat/Room?room=@e.Key">@e.Value</a></li>
+      }
+    </ul>
+  </div>
+</div>

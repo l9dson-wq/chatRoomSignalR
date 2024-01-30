@@ -1,0 +1,66 @@
+﻿@model int
+
+<h1>@chatRoomSignalR.Controllers.ChatController.Rooms.GetValueOrDefault(Model)</h1>
+
+<div class="row">
+  <div class="col-12">
+    <input type="text" placeholder="user" id="user" />
+    <input type="text" placeholder="text" id="message" />
+    <button id="btnSend">Send</button>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-6">
+    <div id="messages"></div>
+  </div>
+  <div class="col-6">
+    <div id="notifications"></div>
+  </div>
+</div>
+
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+
+<script>
+
+  const connection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+
+  //This code start the connection with signalR Hub and sends the room number.
+  connection.start()
+  .then(()=>{
+    connection.invoke("AddToGroup","@Model")
+  })
+  .catch((e)=>console.error(e));
+
+  // This code will allow users to send messages to signalR.
+  document.getElementById("btnSend").addEventListener("click", (event) => {
+    const room = "@Model";
+    const user = document.getElementById("user").value;
+    const message = document.getElementById("message").value;
+
+    connection.invoke("SendMessage", room, user, message)
+      .catch(e => {
+        console.error(e.toString());
+      });
+
+    message.value = "";
+    message.focus();
+
+    event.preventDefault();
+  });
+
+  // This code will help us to show the messages that were sent before.
+  connection.on("ReceiveMessage", (user, message) => {
+    const newMessage = "<div><b>" + user + "said:</b>" + message + "</div>";
+    document.getElementById("messages").innerHTML =
+      newMessage + document.getElementById("messages").innerHTML;
+  })
+
+  // This code will hep us to show all the users that have entered to the same room.
+  connection.on("ShowWho", (message) => {
+    const newMessage = "<div><b>" + message + "</b></div>";
+    document.getElementById("notifications").innerHTML =
+      newMessage + document.getElementById("notifications").innerHTML;
+  })
+
+</script>
